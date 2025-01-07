@@ -1,0 +1,29 @@
+{
+    "name": "mattyeend/query-optimizer",
+    "description": "A Laravel package to optimize and analyze database queries.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Matt Yeend",
+            "email": "mail@mattyeend.co.uk"
+        }
+    ],
+    "require": {
+        "php": "^7.4 || ^8.0",
+        "laravel/framework": "^9.0 || ^11.0",
+        "illuminate/support": "^8.0|^9.0|^10.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Mattyeend\\QueryOptimizer\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "MattYeend\\QueryOptimizer\\QueryOptimizerServiceProvider"
+            ]
+        }
+    }
+}
