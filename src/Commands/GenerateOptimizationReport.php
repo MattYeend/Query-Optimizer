@@ -1,6 +1,6 @@
 <?php
 
-namespace MattYeend\QueryOptimizer;
+namespace MattYeend\QueryOptimizer\Commands;
 
 use Illuminate\Console\Command;
 use DB;

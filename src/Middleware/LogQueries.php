@@ -1,6 +1,6 @@
 <?php
 
-namespace MattYeend\QueryOptimizer;
+namespace MattYeend\QueryOptimizer\Middleware;
 
 use Closure;
 use DB;
