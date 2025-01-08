@@ -3,6 +3,13 @@
     "description": "A Laravel package to optimize and analyze database queries.",
     "type": "library",
     "license": "MIT",
+    "keywords": [
+        "Laravel",
+        "Query",
+        "Optimizer",
+        "Query-Optimizer",
+        "Package"
+    ],
     "authors": [
         {
             "name": "Matt Yeend",
