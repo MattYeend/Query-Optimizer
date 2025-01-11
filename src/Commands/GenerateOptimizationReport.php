@@ -3,7 +3,8 @@
 namespace MattYeend\QueryOptimizer\Commands;
 
 use Illuminate\Console\Command;
-use DB;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use MattYeend\QueryOptimizer\Services\QueryAnalyzer;
 
 class GenerateOptimizationReport extends Command
@@ -15,6 +16,14 @@ class GenerateOptimizationReport extends Command
     {
         DB::enableQueryLog();
         $this->info('Query Optimization Report:');
+
+        DB::listen(function($query){
+            Log::info('Query executed', [
+                'query' => $query->sql,
+                'bindings' => $query->bindings,
+                'time' => $query->time,
+            ]);
+        });
 
         $queries = DB::getQueryLog();
         foreach($queries as $query){
@@ -31,5 +40,7 @@ class GenerateOptimizationReport extends Command
                 }
             }
         }
+
+        DB::disableQueryLog();
     }
 }

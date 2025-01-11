@@ -3,8 +3,8 @@
 namespace MattYeend\QueryOptimizer\Middleware;
 
 use Closure;
-use DB;
-use Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class LogQueries{
     public function handle($request, Closure $next)
