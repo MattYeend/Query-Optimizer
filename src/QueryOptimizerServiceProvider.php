@@ -16,7 +16,7 @@ class QueryOptimizerServiceProvider extends ServiceProvider
     public function boot()
     {
         // Register migrations
-        $this->loadMigrationsFrom(__DIR__ . '/Migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/Database/migrations');
         
         // Listen to query events using a Closure
         DB::listen(function ($query) {
