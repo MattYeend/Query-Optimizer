@@ -3,22 +3,29 @@
 namespace MattYeend\QueryOptimizer;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\DB;
+use MattYeend\QueryOptimizer\Listeners\QueryListener;
 
 class QueryOptimizerServiceProvider extends ServiceProvider
 {
     public function register()
     {
-        $this->mergeConfigFrom(__DIR__ . '/../config/query_optimizer.php', 'query_optimizer');
+        // Register services
     }
 
     public function boot()
     {
-        $this->publishes([
-            __DIR__ .'/../config/query_optimizer.php' => config_path('query_optimizer.php'),
-        ], 'config');
-
-        $this->commands([
-            Commands\GenerateOptimizationReport::class,
-        ]);
+        // Register migrations
+        $this->loadMigrationsFrom(__DIR__ . '/Migrations');
+        
+        // Listen to query events
+        DB::listen([QueryListener::class, 'handle']);
+        
+        // Register artisan commands
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                Commands\AnalyzeQueriesCommand::class,
+            ]);
+        }
     }
 }

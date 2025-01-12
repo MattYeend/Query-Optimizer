@@ -32,5 +32,6 @@
                 "MattYeend\\QueryOptimizer\\QueryOptimizerServiceProvider"
             ]
         }
-    }
+    },
+    "minimum-stability": "stable"
 }
