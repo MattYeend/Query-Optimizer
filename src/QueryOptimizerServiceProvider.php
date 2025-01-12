@@ -17,7 +17,12 @@ class QueryOptimizerServiceProvider extends ServiceProvider
     {
         // Register migrations
         $this->loadMigrationsFrom(__DIR__ . '/Database/migrations');
-        
+
+        // Publish migrations for manual migration if needed
+        $this->publishes([
+            __DIR__ . '/Database/migrations' => database_path('migrations'),
+        ], 'migrations');
+
         // Listen to query events using a Closure
         DB::listen(function ($query) {
             // Instantiate the QueryListener and pass the $query to its handle method
