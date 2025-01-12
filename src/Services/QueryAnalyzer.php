@@ -1,42 +1,72 @@
 <?php
 
-namespace MattYeend\QueryOptimizer\Commands;
+namespace MattYeend\QueryOptimizer\Services;
 
-use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use MattYeend\QueryOptimizer\Services\QueryAnalyzer;
+use Illuminate\Support\Facades\Log;
 
-class GenerateOptimizationReport extends Command
+class QueryAnalyzer
 {
-    protected $signature = 'query-optimizer:report';
-    protected $description = 'Generate a query optimization report';
-
-    public function handle()
+    public function analyze($query)
     {
-        DB::enableQueryLog();
-        $this->info('Query Optimization Report:');
+        $suggestions = [];
 
-        $queries = DB::getQueryLog();
+        // Check for SELECT * usage
+        if (preg_match('/SELECT \*/i', $query)) {
+            $suggestions[] = 'Avoid using SELECT *. Specify the columns needed.';
+        }
 
-        if (empty($queries)) {
-            $this->info('No queries found.');
-        } else {
-            foreach ($queries as $query) {
-                $this->info('Query: ' . $query['query']);
-                $this->info('Execution Time: ' . $query['time'] . 'ms');
+        // Check if the query has a WHERE clause
+        if (!preg_match('/WHERE/i', $query)) {
+            $suggestions[] = 'Queries on large tables should include a WHERE clause.';
+        }
 
-                $analyzer = new QueryAnalyzer();
-                $suggestions = $analyzer->analyze($query['query']);
+        // Check database existence
+        if (!$this->checkDatabaseExists()) {
+            $suggestions[] = 'Warning: The database does not exist.';
+        }
 
-                if (!empty($suggestions)) {
-                    $this->warn('Suggestions:');
-                    foreach ($suggestions as $suggestion) {
-                        $this->warn('- ' . $suggestion);
-                    }
-                }
+        // Check table existence
+        $tableName = $this->extractTableName($query);
+        if ($tableName) {
+            if (!$this->checkTableExists($tableName)) {
+                $suggestions[] = "Warning: The table '{$tableName}' does not exist.";
             }
         }
 
-        DB::disableQueryLog();
+        return $suggestions;
+    }
+
+    private function checkDatabaseExists()
+    {
+        try {
+            $database = DB::getDatabaseName();
+            return DB::select("SHOW DATABASES LIKE ?", [$database]) ? true : false;
+        } catch (\Exception $e) {
+            Log::error('Database existence check failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    private function extractTableName($query)
+    {
+        if (preg_match('/FROM `?(\w+)`?/i', $query, $matches)) {
+            return $matches[1];
+        }
+        if (preg_match('/INTO `?(\w+)`?/i', $query, $matches)) {
+            return $matches[1];
+        }
+        return null;
+    }
+
+    private function checkTableExists($tableName)
+    {
+        try {
+            $result = DB::select("SHOW TABLES LIKE ?", [$tableName]);
+            return !empty($result);
+        } catch (\Exception $e) {
+            Log::error("Table existence check for '{$tableName}' failed: " . $e->getMessage());
+            return false;
+        }
     }
 }
