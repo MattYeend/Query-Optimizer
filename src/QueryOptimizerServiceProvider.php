@@ -18,9 +18,13 @@ class QueryOptimizerServiceProvider extends ServiceProvider
         // Register migrations
         $this->loadMigrationsFrom(__DIR__ . '/Migrations');
         
-        // Listen to query events
-        DB::listen([QueryListener::class, 'handle']);
-        
+        // Listen to query events using a Closure
+        DB::listen(function ($query) {
+            // Instantiate the QueryListener and pass the $query to its handle method
+            $listener = app(QueryListener::class);
+            $listener->handle($query);
+        });
+
         // Register artisan commands
         if ($this->app->runningInConsole()) {
             $this->commands([
