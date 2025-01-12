@@ -13,30 +13,41 @@ class GenerateOptimizationReport extends Command
 
     public function handle()
     {
-        DB::enableQueryLog();
-        $this->info('Query Optimization Report:');
+        try {
+            // Attempt to establish a database connection
+            DB::connection()->getPdo();
 
-        $queries = DB::getQueryLog();
+            DB::enableQueryLog();
+            $this->info('Query Optimization Report:');
 
-        if (empty($queries)) {
-            $this->info('No queries found.');
-        } else {
-            foreach ($queries as $query) {
-                $this->info('Query: ' . $query['query']);
-                $this->info('Execution Time: ' . $query['time'] . 'ms');
+            $queries = DB::getQueryLog();
 
-                $analyzer = new QueryAnalyzer();
-                $suggestions = $analyzer->analyze($query['query']);
+            if (empty($queries)) {
+                $this->info('No queries found.');
+            } else {
+                foreach ($queries as $query) {
+                    $this->info('Query: ' . $query['query']);
+                    $this->info('Execution Time: ' . $query['time'] . 'ms');
 
-                if (!empty($suggestions)) {
-                    $this->warn('Suggestions:');
-                    foreach ($suggestions as $suggestion) {
-                        $this->warn('- ' . $suggestion);
+                    $analyzer = new QueryAnalyzer();
+                    $suggestions = $analyzer->analyze($query['query']);
+
+                    if (!empty($suggestions)) {
+                        $this->warn('Suggestions:');
+                        foreach ($suggestions as $suggestion) {
+                            $this->warn('- ' . $suggestion);
+                        }
                     }
                 }
             }
-        }
 
-        DB::disableQueryLog();
+            DB::disableQueryLog();
+        } catch (\PDOException $e) {
+            // Handle database connection issues
+            $this->error('Database connection failed: ' . $e->getMessage());
+        } catch (\Exception $e) {
+            // Handle any other unexpected errors
+            $this->error('An unexpected error occurred: ' . $e->getMessage());
+        }
     }
 }
