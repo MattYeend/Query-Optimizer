@@ -1,21 +1,42 @@
 <?php
 
-namespace MattYeend\QueryOptimizer\Services;
+namespace MattYeend\QueryOptimizer\Commands;
 
-class QueryOptimizer
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
+use MattYeend\QueryOptimizer\Services\QueryAnalyzer;
+
+class GenerateOptimizationReport extends Command
 {
-    public function analyze($query)
+    protected $signature = 'query-optimizer:report';
+    protected $description = 'Generate a query optimization report';
+
+    public function handle()
     {
-        $suggestions = [];
+        DB::enableQueryLog();
+        $this->info('Query Optimization Report:');
 
-        if(preg_match('/SELECT \*/i', $query)){
-            $suggestions[] = 'Avoid using SELECT *. Specify the columns needed.';
+        $queries = DB::getQueryLog();
+
+        if (empty($queries)) {
+            $this->info('No queries found.');
+        } else {
+            foreach ($queries as $query) {
+                $this->info('Query: ' . $query['query']);
+                $this->info('Execution Time: ' . $query['time'] . 'ms');
+
+                $analyzer = new QueryAnalyzer();
+                $suggestions = $analyzer->analyze($query['query']);
+
+                if (!empty($suggestions)) {
+                    $this->warn('Suggestions:');
+                    foreach ($suggestions as $suggestion) {
+                        $this->warn('- ' . $suggestion);
+                    }
+                }
+            }
         }
 
-        if(!preg_match('/WHERE/i', $query)){
-            $suggestions[] = 'Queries on large tables should include a WHERE clause.';
-        }
-
-        return $suggestions;
+        DB::disableQueryLog();
     }
 }
